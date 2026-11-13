@@ -1,0 +1,42 @@
+# Local development: a real PostgreSQL and a real S3-compatible store (MinIO) on your laptop.
+# The API runs outside Docker with `dotnet run` so you get hot reload and a debugger.
+#
+#   docker compose up -d
+#   MinIO console: http://localhost:9001  (minioadmin / minioadmin-local-only)
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: archive
+      POSTGRES_USER: archive
+      POSTGRES_PASSWORD: archive-local-only
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archive -d archive"]
+      interval: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin-local-only
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+
+  # One-shot job that creates the bucket, then exits.
+  minio-init:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadmin-local-only; do sleep 1; done;
+      mc mb --ignore-existing local/project-archive;
+      "
+
+volumes:
+  pgdata:
+  miniodata:

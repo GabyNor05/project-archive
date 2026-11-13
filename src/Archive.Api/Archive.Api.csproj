@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>project-archive-api</UserSecretsId>
+    <!--
+      Lock files: the first `dotnet restore` writes packages.lock.json with the exact
+      version of every package (and every package THEY depend on). Commit it. Ten years
+      from now a restore gives you the same bits, not "whatever is newest".
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PostgreSQL via Entity Framework Core (ORM + migrations). -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <!-- Talks the S3 protocol, so it works with Backblaze B2, Cloudflare R2, MinIO, AWS... -->
+    <PackageReference Include="AWSSDK.S3" Version="4.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Archive.Core\Archive.Core.csproj" />
+  </ItemGroup>
+
+</Project>
